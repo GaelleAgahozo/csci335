@@ -32,5 +32,5 @@ public class OneLevelGreedy extends CheckersSearcher {
             }
         }
         return best;
-    }
-}
+
+}}
