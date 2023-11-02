@@ -27,4 +27,7 @@ public class SearchNode<T> {
     public T getValue() {return value;}
 
     public int getDepth() {return depth;}
+
+    public void getState() {
+    }
 }

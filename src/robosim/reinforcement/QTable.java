@@ -13,26 +13,51 @@ public class QTable {
     //  Calculate the learning rate using this formula: 1/(1 + total visits for this (state, action) pair/rateConstant)
     //  Should pass QTableTest.testLearningRate().
     public double getLearningRate(int state, int action) {
-        return 0.0;
+        int totalVisits = visits[state][action];
+        return 1/(1+ totalVisits/ (double) rateConstant);
+//        return 0.0;
     }
 
     // TODO: Find the action for the given state that has the highest q value.
     //  Should pass QTableTest.testBestAction()
     public int getBestAction(int state) {
-        return -1;
+        double maxQValue = Double.NEGATIVE_INFINITY;
+        int bestAction = -1;
+
+        for (int action = 0; action < q[state].length; action++){
+            if( q[state][action]> maxQValue){
+                maxQValue = q[state][action];
+                bestAction = action;
+            }
+        }
+        return bestAction;
     }
 
     // TODO: Returns true if any action for this state is below the target
     //  visits. Returns false otherwise.
     //  Should pass QTableTest.testIsExploring()
     public boolean isExploring(int state) {
+        for (int action = 0; action < visits [state].length; action++){
+            if (visits[state][action] < targetVisits){
+                return true;
+            }
+        }
         return false;
     }
 
     // TODO: Returns the least visited action in state.
     //  Should pass QTableTest.testLeastVisitedAction()
     public int leastVisitedAction(int state) {
-        return -1;
+        int leastVisitedAction = 0;
+        int minVisits = visits[state][0];
+
+        for (int action = 1; action < visits[state].length; action++){
+            if (visits[state][action]< minVisits){
+                minVisits = visits[state][action];
+                leastVisitedAction= action;
+            }
+        }
+        return leastVisitedAction;
     }
 
     // TODO:
@@ -49,7 +74,25 @@ public class QTable {
     //  Q update formula:
     //    Q(s, a) = (1 - learningRate) * Q(s, a) + learningRate * (discount * maxa(Q(s', a)) + r(s))
     public int senseActLearn(int newState, double reward) {
-        return -1;
+        double learningRate = getLearningRate(lastState, lastAction);
+        double maxQvalue = getQ(newState, getBestAction(newState));
+        //  Q update formula:
+        //    Q(s, a) = (1 - learningRate) * Q(s, a) + learningRate * (discount * maxa(Q(s', a)) + r(s))
+        q[lastState][lastAction] = (1 - learningRate) * q[lastState][lastAction] + learningRate * (discount * maxQvalue + reward);
+
+        visits[lastState][lastAction]++;
+
+        int selectedAction;
+        if (isExploring(newState)){
+            selectedAction = leastVisitedAction(newState);
+        }
+        else{
+            selectedAction = getBestAction(newState);
+        }
+        lastState = newState;
+        lastAction = selectedAction;
+
+        return selectedAction;
     }
 
     public QTable(int states, int actions, int startState, int targetVisits, int rateConstant, double discount) {

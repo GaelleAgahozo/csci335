@@ -197,4 +197,8 @@ public class Maze {
         System.out.println("Maze-ified");
         System.out.println(m);
     }
+
+    public boolean isBlocked(Pos location, Pos neighbor) {
+        return false;
+    }
 }

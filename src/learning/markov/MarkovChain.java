@@ -30,7 +30,19 @@ public class MarkovChain<L,S> {
     // Increase the count for the transition from prev to next.
     // Should pass SimpleMarkovTest.testCreateChains().
     public void count(Optional<S> prev, L label, S next) {
-        // TODO: YOUR CODE HERE
+        HashMap<Optional<S>,
+                Histogram<S>> symbol2symbol
+                = label2symbol2symbol.computeIfAbsent(label, k ->
+                new HashMap<>());
+
+        Histogram<S> histogram=
+                symbol2symbol.get(prev);
+                if (histogram ==null){
+                    histogram = new
+                            Histogram<>();
+                    symbol2symbol.put(prev, histogram);
+                }
+                histogram.bump(next);
     }
 
     // Returns P(sequence | label)
@@ -39,21 +51,59 @@ public class MarkovChain<L,S> {
     // HINT: Be sure to add 1 to both the numerator and denominator when finding the probability of a
     // transition. This helps avoid sending the probability to zero.
     public double probability(ArrayList<S> sequence, L label) {
-        // TODO: YOUR CODE HERE
-        return 0.0;
+        double logProbabilitySum;
+        logProbabilitySum = 0.0;
+
+        HashMap<Optional<S>, Histogram<S>> symbol2symbol = label2symbol2symbol.get(label);
+        if (symbol2symbol != null) {
+            Optional<S> prev = Optional.empty();
+
+            for( S currentSymbol : sequence){
+                Histogram<S> histogram = symbol2symbol.get(prev);
+
+                if (histogram != null){
+                    double prob = (histogram.getCountFor(currentSymbol) + 1.0) / (histogram.getTotalCounts() + 1.0);
+                    double logProb = Math.log(prob);
+                    logProbabilitySum += logProb;
+                }
+                prev = Optional.of(currentSymbol);
+            }
+        }
+        return Math.exp(logProbabilitySum);
     }
 
     // Return a map from each label to P(label | sequence).
     // Should pass MajorMarkovTest.testSentenceDistributions()
     public LinkedHashMap<L,Double> labelDistribution(ArrayList<S> sequence) {
-        // TODO: YOUR CODE HERE
-        return null;
+        LinkedHashMap<L, Double> distribution = new LinkedHashMap<>();
+        double totalProbability = 0.0;
+
+        for (L label : allLabels()){
+            double labelProb = probability(sequence, label);
+            distribution.put(label, labelProb);
+            totalProbability += labelProb;
+
+            for (Map.Entry<L, Double> entry : distribution.entrySet()){
+                distribution.put(entry.getKey(), entry.getValue()/ totalProbability);
+            }
+
+        }
+        return distribution;
     }
 
     // Calls labelDistribution(). Returns the label with highest probability.
     // Should pass MajorMarkovTest.bestChainTest()
     public L bestMatchingChain(ArrayList<S> sequence) {
-        // TODO: YOUR CODE HERE
-        return null;
+        LinkedHashMap<L, Double> allLang = labelDistribution(sequence);
+        L bestChoice = null;
+        double maxProbability = 0.0;
+
+        for(Map.Entry< L, Double> entry : allLang.entrySet()){
+            if (entry.getValue() > maxProbability){
+                maxProbability = entry.getValue();
+                bestChoice = entry.getKey();
+            }
+        }
+        return bestChoice;
     }
 }
