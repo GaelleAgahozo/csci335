@@ -176,8 +176,9 @@ public class QTable {
     public int getLastState() {
         return lastState;
     }
-
-    public int getLastAction() {
+    public int getLastAction(){
         return lastAction;
     }
+
+
 }
